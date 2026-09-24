@@ -606,19 +606,6 @@ export const DashboardPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Operations Process Bar */}
-                <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-[11px] font-semibold text-slate-600">
-                  <span className="text-xs uppercase font-bold text-slate-400">Workflow:</span>
-                  <span className="px-2 py-0.5 bg-sky-50 text-sky-800 border border-sky-200 rounded">1. Monitor Routes</span>
-                  <span>→</span>
-                  <span className="px-2 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded">2. Identify Hazard</span>
-                  <span>→</span>
-                  <span className="px-2 py-0.5 bg-rose-50 text-rose-800 border border-rose-200 rounded">3. Assess Risk</span>
-                  <span>→</span>
-                  <span className="px-2 py-0.5 bg-indigo-50 text-indigo-800 border border-indigo-200 rounded">4. AI Advisory</span>
-                  <span>→</span>
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded">5. Take Action</span>
-                </div>
               </div>
 
               {/* KPI Cards Grid */}
