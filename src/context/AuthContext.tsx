@@ -4,7 +4,8 @@ import {
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as firebaseSignOut,
   updateProfile
 } from 'firebase/auth';
@@ -78,16 +79,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Persistent Auth State Listener
+    // 1. Process redirect result if returning from Google OAuth redirect
+    getRedirectResult(auth)
+      .then((userCredential) => {
+        if (userCredential?.user) {
+          setUser(userCredential.user);
+          fetchProfile(userCredential.user);
+        }
+      })
+      .catch((error) => {
+        console.warn("Firebase redirect auth result notice:", error);
+      });
+
+    // 2. Persistent Auth State Listener
     const unsubscribe = onAuthStateChanged(
       auth,
       (currentUser) => {
-        // 1. Update user state
+        // Update user state
         setUser(currentUser);
-        // 2. Resolve Auth loading IMMEDIATELY (never wait for Firestore to resolve auth initialization)
+        // Resolve Auth loading IMMEDIATELY
         setLoading(false);
 
-        // 3. Asynchronously fetch Firestore profile in background
+        // Asynchronously fetch Firestore profile in background
         if (currentUser) {
           fetchProfile(currentUser);
         } else {
@@ -120,10 +133,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { message: 'Password should be at least 6 characters long.' };
     }
     if (code === 'auth/popup-closed-by-user') {
-      return { message: 'Google sign-in popup was closed before completing authentication.' };
+      return { message: 'Google sign-in was closed before completing authentication.' };
     }
     if (code === 'auth/popup-blocked') {
-      return { message: 'Google sign-in popup was blocked by your browser. Please enable popups.' };
+      return { message: 'Google sign-in was blocked by your browser. Please allow redirects.' };
     }
     if (code === 'auth/network-request-failed') {
       return { message: 'Unable to connect to authentication service. Please check your network connection.' };
@@ -179,13 +192,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signInWithGoogle = async () => {
     setLoading(true);
     try {
-      const userCredential = await signInWithPopup(auth, googleProvider);
-      setUser(userCredential.user);
-      setLoading(false);
-      if (userCredential.user) {
-        fetchProfile(userCredential.user);
-      }
-      return { error: null, user: userCredential.user };
+      await signInWithRedirect(auth, googleProvider);
+      return { error: null, user: null };
     } catch (err: any) {
       setLoading(false);
       return { error: formatAuthError(err), user: null };

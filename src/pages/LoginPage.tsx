@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Route, Mail, Lock, AlertCircle, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
@@ -12,8 +12,14 @@ export const LoginPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [googleSubmitting, setGoogleSubmitting] = useState(false);
 
-  const { signIn, signInWithGoogle } = useAuth();
+  const { user, signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +37,7 @@ export const LoginPage: React.FC = () => {
     setSubmitting(true);
 
     try {
-      const { user, error: authError } = await signIn(email, password);
+      const { user: loggedInUser, error: authError } = await signIn(email, password);
 
       if (authError) {
         setError(authError.message || 'Invalid email or password.');
@@ -39,8 +45,8 @@ export const LoginPage: React.FC = () => {
         return;
       }
 
-      if (user) {
-        navigate('/dashboard');
+      if (loggedInUser) {
+        navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
       setError('An unexpected error occurred during login. Please try again.');
@@ -54,20 +60,15 @@ export const LoginPage: React.FC = () => {
     setGoogleSubmitting(true);
 
     try {
-      const { user, error: authError } = await signInWithGoogle();
+      const { error: authError } = await signInWithGoogle();
 
       if (authError) {
-        setError(authError.message || 'Google sign-in failed.');
+        setError(authError.message || 'Google sign-in failed. Please try again.');
         setGoogleSubmitting(false);
         return;
       }
-
-      if (user) {
-        navigate('/dashboard');
-      }
     } catch (err: any) {
-      setError('An error occurred during Google authentication.');
-    } finally {
+      setError('An error occurred during Google authentication. Please try again.');
       setGoogleSubmitting(false);
     }
   };

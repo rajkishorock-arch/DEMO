@@ -325,13 +325,13 @@ export const DashboardPage: React.FC = () => {
         refreshUserProfile();
         setFirestoreSynced(true);
         if (addedId) {
-          setIncSuccessMsg('Incident reported & saved to Cloud Firestore (users/' + user?.uid?.substring(0, 6) + '...)!');
+          setIncSuccessMsg('Incident reported and saved successfully!');
         } else {
-          setIncSuccessMsg('Incident reported locally. (Cloud Firestore write restricted by security rules)');
+          setIncSuccessMsg('Incident reported successfully.');
         }
       } catch (err) {
         console.warn("Firestore incident write notice:", err);
-        setIncErrorMsg('Incident reported locally. Cloud Firestore permission restricted.');
+        setIncErrorMsg('Unable to save incident at this time. Please try again.');
       }
     }
 
@@ -436,7 +436,7 @@ export const DashboardPage: React.FC = () => {
             {/* User Greeting & Firestore Status Badge & Logout */}
             <div className="flex items-center space-x-4">
               <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs">
-                <Database className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                <User className="w-3.5 h-3.5 text-sky-600 shrink-0" />
                 <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-[200px]">{getUserDisplayName()}</span>
                 <span className="text-slate-500 text-[11px] truncate max-w-[120px] sm:max-w-[180px]">({user?.email})</span>
               </div>
@@ -454,15 +454,15 @@ export const DashboardPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Main Layout Grid */}
-      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+      {/* Main Layout Flex: Sidebar (~270px) + Main Content (remaining) */}
+      <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 xl:px-10 py-6 flex flex-col md:flex-row gap-6">
         
         {/* Sidebar Nav (Desktop & Mobile Drawer) */}
         <aside className={`
-          fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-xs p-4 md:p-0 md:static md:bg-transparent md:backdrop-blur-none md:col-span-3 lg:col-span-3 xl:col-span-2 transition-all duration-200
+          fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-xs p-4 md:p-0 md:static md:bg-transparent md:backdrop-blur-none md:w-[270px] md:shrink-0 transition-all duration-200
           ${mobileSidebarOpen ? 'block' : 'hidden md:block'}
         `}>
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 sticky top-20 shadow-sm space-y-1.5">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sticky top-20 shadow-sm space-y-1.5 w-full max-w-xs md:max-w-none">
             <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-200 md:hidden">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Navigation Menu</span>
               <button
@@ -475,30 +475,30 @@ export const DashboardPage: React.FC = () => {
 
             <button
               onClick={() => { setActiveTab('overview'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'overview'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <LayoutDashboard className="w-4.5 h-4.5" />
-              <span>Dashboard</span>
+              <LayoutDashboard className="w-4.5 h-4.5 shrink-0" />
+              <span className="whitespace-nowrap">Dashboard</span>
             </button>
 
             <button
               onClick={() => { setActiveTab('routes'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'routes'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                <Compass className="w-4.5 h-4.5" />
-                <span>Route Accessibility</span>
+              <div className="flex items-center space-x-3 min-w-0">
+                <Compass className="w-4.5 h-4.5 shrink-0" />
+                <span className="whitespace-nowrap">Route Accessibility</span>
               </div>
               {atRiskCount > 0 && (
-                <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200">
+                <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-800 rounded-full border border-amber-200 shrink-0">
                   {atRiskCount} Risk
                 </span>
               )}
@@ -506,59 +506,59 @@ export const DashboardPage: React.FC = () => {
 
             <button
               onClick={() => { setActiveTab('logistics'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'logistics'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Truck className="w-4.5 h-4.5" />
-              <span>Logistics Telemetry</span>
+              <Truck className="w-4.5 h-4.5 shrink-0" />
+              <span className="whitespace-nowrap">Logistics Telemetry</span>
             </button>
 
             <button
               onClick={() => { setActiveTab('incidents'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'incidents'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <div className="flex items-center space-x-3">
-                <AlertTriangle className="w-4.5 h-4.5" />
-                <span>Incident Reporting</span>
+              <div className="flex items-center space-x-3 min-w-0">
+                <AlertTriangle className="w-4.5 h-4.5 shrink-0" />
+                <span className="whitespace-nowrap">Incident Reporting</span>
               </div>
-              <span className="px-2 py-0.5 text-[10px] font-bold bg-rose-100 text-rose-800 rounded-full border border-rose-200">
+              <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-rose-100 text-rose-800 rounded-full border border-rose-200 shrink-0">
                 {activeIncidentsCount}
               </span>
             </button>
 
             <button
               onClick={() => { setActiveTab('advisor'); setMobileSidebarOpen(false); }}
-              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+              className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                 activeTab === 'advisor'
                   ? 'bg-sky-600 text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Brain className="w-4.5 h-4.5" />
-              <span>AI Route Advisor</span>
+              <Brain className="w-4.5 h-4.5 shrink-0" />
+              <span className="whitespace-nowrap">AI Route Advisor</span>
             </button>
 
             <div className="pt-4 mt-4 border-t border-slate-200">
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-700 hover:bg-rose-50 transition-all"
+                className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-rose-700 hover:bg-rose-50 transition-all whitespace-nowrap"
               >
-                <LogOut className="w-4.5 h-4.5" />
-                <span>Sign Out</span>
+                <LogOut className="w-4.5 h-4.5 shrink-0" />
+                <span className="whitespace-nowrap">Sign Out</span>
               </button>
             </div>
           </div>
         </aside>
 
         {/* Tab Main Content */}
-        <main className="md:col-span-9 lg:col-span-9 xl:col-span-10 space-y-6">
+        <main className="flex-1 min-w-0 space-y-6">
 
           {/* Firestore Profile Error Alert Banner */}
           {profileError && (
@@ -603,10 +603,6 @@ export const DashboardPage: React.FC = () => {
                     <p className="text-sm text-slate-500 mt-1">
                       North Eastern Region logistics monitoring & route accessibility control panel.
                     </p>
-                  </div>
-                  <div className="inline-flex items-center space-x-2 text-xs bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1.5 rounded-xl self-start sm:self-auto font-medium">
-                    <Database className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Firestore Document: <code className="font-mono text-[11px]">users/{user?.uid?.substring(0, 8)}...</code></span>
                   </div>
                 </div>
 
@@ -941,7 +937,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-xs text-slate-500">
                   <Truck className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="font-semibold text-slate-700">No Active Vehicles in Dispatch</p>
-                  <p className="text-[11px] text-slate-400 mt-1">Vehicle dispatches assigned to your UID will appear here.</p>
+                  <p className="text-[11px] text-slate-400 mt-1">Vehicle dispatches assigned to your account will appear here.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1009,12 +1005,8 @@ export const DashboardPage: React.FC = () => {
                 <div>
                   <h1 className="text-xl font-bold text-slate-900">Incident Reporting System</h1>
                   <p className="text-xs text-slate-500 mt-1">
-                    Report road blockages or weather hazards. Submissions immediately update active incident metrics and persist in Firestore under <code className="bg-slate-100 px-1 py-0.5 rounded text-sky-700 font-mono">users/{user?.uid?.substring(0, 6)}.../activities</code>.
+                    Report road blockages or weather hazards. Submissions immediately update active incident metrics and risk alerts across the network.
                   </p>
-                </div>
-                <div className="hidden sm:flex items-center space-x-1.5 text-xs text-sky-800 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-xl font-medium">
-                  <Database className="w-3.5 h-3.5 text-sky-600" />
-                  <span>Firestore Active</span>
                 </div>
               </div>
 
@@ -1125,12 +1117,12 @@ export const DashboardPage: React.FC = () => {
                       {isSavingIncident ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Saving to Cloud Firestore...</span>
+                          <span>Saving incident report...</span>
                         </>
                       ) : (
                         <>
                           <AlertTriangle className="w-4 h-4" />
-                          <span>Report Incident & Save to Firestore</span>
+                          <span>Submit Incident Report</span>
                         </>
                       )}
                     </button>
@@ -1144,14 +1136,13 @@ export const DashboardPage: React.FC = () => {
                       <AlertOctagon className="w-4 h-4 text-amber-600" />
                       <span>User Activity Feed ({incidents.length})</span>
                     </h2>
-                    <span className="text-[10px] text-slate-500 font-mono">Owner UID: {user?.uid?.substring(0, 10)}...</span>
                   </div>
 
                   {incidents.length === 0 ? (
                     <div className="p-8 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">
                       <AlertTriangle className="w-6 h-6 text-slate-300 mx-auto mb-2" />
                       <p className="font-semibold text-slate-700">No Incidents Reported Yet</p>
-                      <p className="text-[11px] text-slate-400 mt-1">Submit your first road hazard report on the left form to persist data in Firestore.</p>
+                      <p className="text-[11px] text-slate-400 mt-1">Submit your first road hazard report using the form on the left.</p>
                     </div>
                   ) : (
                     <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
