@@ -249,7 +249,7 @@ export const DashboardPage: React.FC = () => {
   // Handlers
   const handleLogout = async () => {
     await signOut();
-    navigate('/login');
+    navigate('/');
   };
 
   const handleReportIncident = async (e: React.FormEvent) => {
