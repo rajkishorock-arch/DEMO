@@ -248,8 +248,9 @@ export const DashboardPage: React.FC = () => {
 
   // Handlers
   const handleLogout = async () => {
+    sessionStorage.setItem('smart_ner_logout', 'true');
     await signOut();
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   const handleReportIncident = async (e: React.FormEvent) => {

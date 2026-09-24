@@ -16,6 +16,10 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   }
 
   if (!user) {
+    if (sessionStorage.getItem('smart_ner_logout') === 'true') {
+      sessionStorage.removeItem('smart_ner_logout');
+      return <Navigate to="/" replace />;
+    }
     return <Navigate to="/login" replace />;
   }
 
