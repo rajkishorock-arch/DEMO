@@ -78,46 +78,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  useEffect(() => {
-    // 1. Process redirect result if returning from Google OAuth redirect
-    getRedirectResult(auth)
-      .then((userCredential) => {
-        if (userCredential?.user) {
-          setUser(userCredential.user);
-          fetchProfile(userCredential.user);
-        }
-      })
-      .catch((error) => {
-        console.warn("Firebase redirect auth result notice:", error);
-      });
-
-    // 2. Persistent Auth State Listener
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (currentUser) => {
-        // Update user state
-        setUser(currentUser);
-        // Resolve Auth loading IMMEDIATELY
-        setLoading(false);
-
-        // Asynchronously fetch Firestore profile in background
-        if (currentUser) {
-          fetchProfile(currentUser);
-        } else {
-          setUserProfile(null);
-          setProfileLoading(false);
-          setProfileError(null);
-        }
-      },
-      (error) => {
-        console.warn("Firebase auth state listener error:", error);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
-  }, []);
-
   const formatAuthError = (err: any) => {
     if (!err) return null;
     const code = err.code || '';
@@ -138,6 +98,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (code === 'auth/popup-blocked') {
       return { message: 'Google sign-in was blocked by your browser. Please allow redirects.' };
     }
+    if (code === 'auth/unauthorized-domain') {
+      return { message: 'This domain is not authorized in Firebase Authentication settings.' };
+    }
     if (code === 'auth/network-request-failed') {
       return { message: 'Unable to connect to authentication service. Please check your network connection.' };
     }
@@ -147,6 +110,77 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return { message: message || 'An unexpected authentication error occurred.' };
   };
+
+  useEffect(() => {
+    let isMounted = true;
+    let redirectHandledUid: string | null = null;
+    let unsubscribeAuthListener: (() => void) | null = null;
+
+    const initAuth = async () => {
+      // 1. Process redirect result first if returning from Google OAuth redirect
+      try {
+        console.log('[Auth] Initializing auth and checking getRedirectResult...');
+        const userCredential = await getRedirectResult(auth);
+        
+        if (userCredential?.user) {
+          console.log('[Auth] Redirect sign-in success for user:', userCredential.user.email);
+          redirectHandledUid = userCredential.user.uid;
+          if (isMounted) {
+            setUser(userCredential.user);
+            await fetchProfile(userCredential.user);
+          }
+        } else {
+          console.log('[Auth] No pending redirect operation found (getRedirectResult is null).');
+        }
+      } catch (err: any) {
+        console.error('[Auth] Error during getRedirectResult:', err?.code, err?.message, err);
+        if (isMounted) {
+          const formatted = formatAuthError(err);
+          setProfileError(formatted?.message || err?.message || 'Authentication error during redirect.');
+        }
+      }
+
+      if (!isMounted) return;
+
+      // 2. Persistent Auth State Listener - attached after redirect processing check
+      unsubscribeAuthListener = onAuthStateChanged(
+        auth,
+        async (currentUser) => {
+          if (!isMounted) return;
+          console.log('[Auth] onAuthStateChanged received:', currentUser ? currentUser.email : 'null');
+          
+          setUser(currentUser);
+          setLoading(false);
+
+          if (currentUser) {
+            // Avoid redundant profile creation if already handled for this user by redirect result
+            if (redirectHandledUid !== currentUser.uid) {
+              await fetchProfile(currentUser);
+            }
+          } else {
+            setUserProfile(null);
+            setProfileLoading(false);
+            setProfileError(null);
+          }
+        },
+        (error: any) => {
+          console.error('[Auth] Firebase auth state listener error:', error?.code, error?.message, error);
+          if (isMounted) {
+            setLoading(false);
+          }
+        }
+      );
+    };
+
+    initAuth();
+
+    return () => {
+      isMounted = false;
+      if (unsubscribeAuthListener) {
+        unsubscribeAuthListener();
+      }
+    };
+  }, []);
 
   const signUp = async (fullName: string, email: string, password: string) => {
     setLoading(true);
